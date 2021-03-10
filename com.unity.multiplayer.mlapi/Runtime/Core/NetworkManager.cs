@@ -87,7 +87,7 @@ namespace MLAPI
         public LogLevel LogLevel = LogLevel.Normal;
 
         /// <summary>
-        /// This is a convenience accessor that gets the LogLevel of the last NetworkManager to have initialized. 
+        /// This is a convenience accessor that gets the LogLevel of the last NetworkManager to have initialized.
         /// </summary>
         internal static LogLevel LogLevelStatic { get; private set; }
 
@@ -230,7 +230,7 @@ namespace MLAPI
             {
                 if (NetworkLog.CurrentLogLevel <= LogLevel.Normal)
                 {
-                    NetworkLog.LogWarning($"{nameof(NetworkManager)} cannot be a {nameof(NetworkObject)}. This will lead to weird side effects.");
+                    NetworkLog.LogWarning($"{nameof(NetworkManager)} cannot be a {nameof(NetworkObject)}.");
                 }
             }
 
@@ -311,7 +311,7 @@ namespace MLAPI
 
         /// <summary>
         /// The Active Scene that this NetworkManager works against. If the NetworkManager is set to DontDestroyOnLoad, then
-        /// this will return whichever scene is currently active. 
+        /// this will return whichever scene is currently active.
         /// </summary>
         public Scene ActiveScene
         {
@@ -321,14 +321,14 @@ namespace MLAPI
                 //they don't know inherently what scene to operate against. If running a local server, developers should place a regular
                 //NetworkManager with scene-lifetime in the "server scene". If the developer wants to handle a scene transition in this scenario,
                 //she should delete the old server scene and create a new one, and re-connect to the newly created server in it. This closely follows
-                //the flow you would follow with a dedicated server, where switching between scenes also means transitioning to a new server process. 
+                //the flow you would follow with a dedicated server, where switching between scenes also means transitioning to a new server process.
                 return (gameObject.scene.name == "DontDestroyOnLoad") ? SceneManager.GetActiveScene() : gameObject.scene;
             }
         }
 
         /// <summary>
         /// Method that finds all Components of a particular type in the NetworkManager's scene. This does
-        /// a depth-first scan of all root objects in the scene, and is O(N) with the number of GameObjects in the scene. 
+        /// a depth-first scan of all root objects in the scene, and is O(N) with the number of GameObjects in the scene.
         /// </summary>
         /// <typeparam name="T">The Monobehaviour to search the scene for.</typeparam>
         /// <returns>List of all Monobehaviours found in that scene.</returns>
@@ -354,7 +354,7 @@ namespace MLAPI
             GameObject[] allObjects = GameObject.FindGameObjectsWithTag(tag);
             List<GameObject> output = new List<GameObject>(allObjects.Length);
 
-            //intentionally not using any LINQ "Where" container filtering here to avoid any extra allocs. 
+            //intentionally not using any LINQ "Where" container filtering here to avoid any extra allocs.
             foreach (var go in allObjects)
             {
                 if (go.scene == ActiveScene)
@@ -368,7 +368,7 @@ namespace MLAPI
 
         public void Awake()
         {
-            //these initializations are done in Awake so that they can be available for editor unit tests. 
+            //these initializations are done in Awake so that they can be available for editor unit tests.
             m_RpcBatcher = new RpcBatcher(this);
             MessagePacker = new MessagePacker(this);
             NetworkReaderPool = new NetworkReaderPool(this);
@@ -416,23 +416,19 @@ namespace MLAPI
                 NetworkTickSystem = null;
             }
 
-            NetworkTickSystem = new NetworkTickSystem();
+            NetworkTickSystem = new NetworkTickSystem(NetworkConfig.NetworkTickIntervalSec);
 
             //This should never happen, but in the event that it does there should be (at a minimum) a unity error logged.
             if (RpcQueueContainer != null)
             {
                 UnityEngine.Debug.LogError("Init was invoked, but rpcQueueContainer was already initialized! (destroying previous instance)");
-                RpcQueueContainer.Shutdown();
+                RpcQueueContainer.Dispose();
                 RpcQueueContainer = null;
             }
 
             //The RpcQueueContainer must be initialized within the Init method ONLY
             //It should ONLY be shutdown and destroyed in the Shutdown method (other than just above)
-            RpcQueueContainer = new RpcQueueContainer(false, this);
-
-            //Note: Since frame history is not being used, this is set to 0
-            //To test frame history, increase the number to (n) where n > 0
-            RpcQueueContainer.Initialize(0);
+            RpcQueueContainer = new RpcQueueContainer(this);
 
             // Register INetworkUpdateSystem (always register this after rpcQueueContainer has been instantiated)
             this.RegisterNetworkUpdate(NetworkUpdateStage.EarlyUpdate);
@@ -458,14 +454,14 @@ namespace MLAPI
                 {
                     if (NetworkLog.CurrentLogLevel <= LogLevel.Error)
                     {
-                        NetworkLog.LogError($"{nameof(NetworkPrefab)} cannot be null");
+                        NetworkLog.LogError($"{nameof(NetworkPrefab)} cannot be null ({nameof(NetworkPrefab)} at index: {i})");
                     }
                 }
                 else if (ReferenceEquals(NetworkConfig.NetworkPrefabs[i].Prefab.GetComponent<NetworkObject>(), null))
                 {
                     if (NetworkLog.CurrentLogLevel <= LogLevel.Error)
                     {
-                        NetworkLog.LogError($"{nameof(NetworkPrefab)} is missing a {nameof(NetworkObject)} component");
+                        NetworkLog.LogError($"{nameof(NetworkPrefab)} (\"{NetworkConfig.NetworkPrefabs[i].Prefab.name}\") is missing a {nameof(NetworkObject)} component");
                     }
                 }
                 else
@@ -681,7 +677,7 @@ namespace MLAPI
             //If an instance of the RpcQueueContainer is still around, then shut it down and remove the reference
             if (RpcQueueContainer != null)
             {
-                RpcQueueContainer.Shutdown();
+                RpcQueueContainer.Dispose();
                 RpcQueueContainer = null;
             }
 
@@ -1014,7 +1010,7 @@ namespace MLAPI
                 {
                     if (NetworkLog.CurrentLogLevel <= LogLevel.Error)
                     {
-                        NetworkLog.LogError("Message unwrap could not be completed. Was the header corrupt? Crypto error?");
+                        NetworkLog.LogError("Message unwrap could not be completed. Was the header corrupt?");
                     }
 
                     return;

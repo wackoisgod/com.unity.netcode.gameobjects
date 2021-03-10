@@ -160,7 +160,6 @@ namespace MLAPI.Transports.UNET
         public override NetworkEvent PollEvent(out ulong clientId, out NetworkChannel networkChannel, out ArraySegment<byte> payload, out float receiveTime)
         {
             int hostId = m_NetworkManager.IsServer ? m_LocalServerHostId : m_ServerHostId;
-
             var eventType = RelayTransport.ReceiveFromHost(hostId, out int connectionId, out int channelId, m_MessageBuffer, m_MessageBuffer.Length, out int receivedSize, out byte error);
 
             clientId = GetMLAPIClientId((byte)hostId, (ushort)connectionId, false);
