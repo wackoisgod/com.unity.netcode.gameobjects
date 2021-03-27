@@ -264,3 +264,7 @@ docs/LastBuild.log
 
 # Unity Package Manager CI output
 upm-ci~
+
+# Visual Studio Code
+.vscode/
+.history/
