@@ -54,7 +54,7 @@ if args.check:
 
     check_exec = os.system("dotnet-format ./testproject/testproject.sln --fix-whitespace --fix-style error --check")
     if check_exec != 0:
-        exit(check_exec)
+        exit(f"check_exec failed, exit code: {check_exec}")
 
 
 if args.fix:
@@ -62,4 +62,4 @@ if args.fix:
 
     fix_exec = os.system("dotnet-format ./testproject/testproject.sln --fix-whitespace --fix-style error")
     if fix_exec != 0:
-        exit(fix_exec)
+        exit(f"fix_exec failed, exit code: {fix_exec}")
