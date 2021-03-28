@@ -1,25 +1,15 @@
 #!/usr/bin/env python3
 
-import sys
 import os
+import sys
+import stat
 import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument(
-    "-i", "--install",
-    help="install help text here (todo)",
-    action="store_true")
-
-parser.add_argument(
-    "-c", "--check",
-    help="check help text here (todo)",
-    action="store_true")
-
-parser.add_argument(
-    "-f", "--fix",
-    help="fix help text here (todo)",
-    action="store_true")
+parser.add_argument("-i", "--install", help="install help text here (todo)", action="store_true")
+parser.add_argument("-c", "--check", help="check help text here (todo)", action="store_true")
+parser.add_argument("-f", "--fix", help="fix help text here (todo)", action="store_true")
 
 if len(sys.argv) == 1:
     parser.print_help(sys.stderr)
@@ -30,22 +20,46 @@ args = parser.parse_args()
 
 if args.install:
     print("execute install")
-    answer = input("install? [Y/n]\n").lower()
-    if answer in ["yes", "y", "ye", ""]:
-        print("install: yes")
-    elif answer in ["no", "n"]:
-        print("install: no")
-    else:
-        print("install: error")
+
+    version_exec = os.system("dotnet-format --version")
+    if version_exec != 0:
+        exit(
+            "cannot execute `dotnet-format --version` command\n"
+            "please make sure to have `dotnet-format` installed\n"
+            "https://github.com/dotnet/format#how-to-install"
+        )
+
+    hook_path = "./.git/hooks/pre-push"
+    if os.path.exists(hook_path):
+        exit(
+            f"git pre-push hook file already exists: `{hook_path}`\n"
+            "please make sure to backup and delete pre-push hook file\n"
+            "installation WILL NOT continue and override existing file"
+        )
+
+    print("write git pre-push hook file contents")
+    hook_file = open(hook_path, "w")
+    hook_file.write(f"#!/bin/sh\n\npython3 {os.path.basename(sys.argv[0])} --check\n")
+    hook_file.close()
+
+    print("make git pre-push hook file executable")
+    hook_stat = os.stat(hook_path)
+    os.chmod(hook_path, hook_stat.st_mode | stat.S_IEXEC)
+
+    print("installation complete!")
 
 
 if args.check:
     print("execute check")
 
+    check_exec = os.system("dotnet-format ./testproject/testproject.sln --fix-whitespace --fix-style error --check")
+    if check_exec != 0:
+        exit(check_exec)
+
 
 if args.fix:
     print("execute fix")
 
-
-print("pre-push hook executes standards.py")
-exit(0)
+    fix_exec = os.system("dotnet-format ./testproject/testproject.sln --fix-whitespace --fix-style error")
+    if fix_exec != 0:
+        exit(fix_exec)
