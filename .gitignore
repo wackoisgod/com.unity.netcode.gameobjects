@@ -266,5 +266,4 @@ docs/LastBuild.log
 upm-ci~
 
 # Visual Studio Code
-.vscode/
-.history/
+.vscode
