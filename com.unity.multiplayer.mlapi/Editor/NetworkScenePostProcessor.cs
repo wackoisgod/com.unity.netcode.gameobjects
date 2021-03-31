@@ -1,67 +1,31 @@
-using System.Collections.Generic;
-using System.Linq;
 using MLAPI;
-using UnityEditor.Callbacks;
+using MLAPI.Hashing;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace UnityEditor
 {
-    internal class NetworkScenePostProcessor
+    internal class NetworkScenePostProcessor : IProcessSceneWithReport
     {
-        [PostProcessScene(int.MaxValue)]
-        public static void ProcessScene()
+        public int callbackOrder => int.MaxValue;
+
+        public void OnProcessScene(Scene scene, BuildReport report)
         {
-            // find all scene objects that have not been spawned yet
-            // TODO: long term, replace the means of finding candidate objects to repace FindObjectsOfType
-            var traverseSortedObjects = Object.FindObjectsOfType<NetworkObject>().Where(x => x.IsSceneObject == null).ToList();
-
-            traverseSortedObjects.Sort((x, y) =>
+            var networkObjects = Object.FindObjectsOfType<NetworkObject>();
+            foreach (var networkObject in networkObjects)
             {
-                List<int> xSiblingIndex = x.TraversedSiblingIndex();
-                List<int> ySiblingIndex = y.TraversedSiblingIndex();
-
-                while (xSiblingIndex.Count > 0 && ySiblingIndex.Count > 0)
+                if (networkObject.IsSceneObject != null)
                 {
-                    if (xSiblingIndex[0] < ySiblingIndex[0])
-                    {
-                        return -1;
-                    }
-
-                    if (xSiblingIndex[0] > ySiblingIndex[0])
-                    {
-                        return 1;
-                    }
-
-                    xSiblingIndex.RemoveAt(0);
-                    ySiblingIndex.RemoveAt(0);
+                    continue;
                 }
 
-                return 0;
-            });
+                var globalObjectId = GlobalObjectId.GetGlobalObjectIdSlow(networkObject);
+                var gObjIdHash64 = XXHash.Hash64(globalObjectId.ToString());
 
-            for (ulong i = 0; i < (ulong)traverseSortedObjects.Count; i++)
-            {
-                traverseSortedObjects[(int)i].NetworkInstanceId = i;
+                networkObject.NetworkInstanceId = gObjIdHash64;
             }
-        }
-    }
-
-    internal static class PrefabHelpers
-    {
-        internal static List<int> TraversedSiblingIndex(this NetworkObject networkObject)
-        {
-            var paths = new List<int>();
-            var transform = networkObject.transform;
-
-            while (transform != null)
-            {
-                paths.Add(transform.GetSiblingIndex());
-                transform = transform.parent;
-            }
-
-            paths.Reverse();
-
-            return paths;
         }
     }
 }
