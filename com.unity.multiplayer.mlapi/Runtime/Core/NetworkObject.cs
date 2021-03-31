@@ -84,7 +84,11 @@ namespace MLAPI
         /// </summary>
         [HideInInspector]
         [SerializeField]
-        internal ulong NetworkInstanceId;
+        public ulong NetworkInstanceId; // persistent scene id
+
+        [HideInInspector]
+        [SerializeField]
+        public ulong NetworkPrefabId; // persistent asset id
 
         /// <summary>
         /// The Prefab unique hash. This should not be set my the user but rather changed by editing the PrefabHashGenerator.
