@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor
 {
-    internal class NetworkScenePostProcessor
+    /* internal class NetworkScenePostProcessor
     {
         [PostProcessScene(int.MaxValue)]
         public static void ProcessScene()
@@ -63,5 +63,5 @@ namespace UnityEditor
 
             return paths;
         }
-    }
+    } */
 }
