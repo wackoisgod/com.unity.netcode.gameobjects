@@ -20,8 +20,18 @@ namespace MLAPI
     [DisallowMultipleComponent]
     public sealed class NetworkObject : MonoBehaviour
     {
+        public string GlobalObjectIdString = string.Empty;
+        public uint GlobalObjectIdHash32 = 0;
+
         private void OnValidate()
         {
+#if UNITY_EDITOR
+            GlobalObjectIdString = UnityEditor.GlobalObjectId.GetGlobalObjectIdSlow(this).ToString();
+            GlobalObjectIdHash32 = XXHash.Hash32(GlobalObjectIdString);
+
+            print($"{GlobalObjectIdHash32} --- {GlobalObjectIdString} ({name})");
+#endif
+
             // Set this so the hash can be serialized on Scene objects. For prefabs, they are generated at runtime.
             ValidateHash();
         }
@@ -82,10 +92,11 @@ namespace MLAPI
         /// InstanceId is the id that is unique to the object and scene for a scene object when UsePrefabSync is false.
         /// If UsePrefabSync is true or if it's used on non scene objects, this has no effect.
         /// Should not be set manually
+        /// The Persistent Stable Project-Global Unique ID of the NetworkObject placed into the Scene Hierarchy
         /// </summary>
         [HideInInspector]
         [SerializeField]
-        internal ulong NetworkInstanceId;
+        public ulong NetworkInstanceId;
 
         /// <summary>
         /// The Prefab unique hash. This should not be set my the user but rather changed by editing the PrefabHashGenerator.

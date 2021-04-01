@@ -35,6 +35,8 @@ namespace MLAPI.Configuration
                     return 0;
                 }
 
+                Debug.Log($"{networkObject.GlobalObjectIdHash32} --- {networkObject.GlobalObjectIdString} (NetPrefab: {Prefab.name})");
+
                 return networkObject.PrefabHash;
             }
         }
