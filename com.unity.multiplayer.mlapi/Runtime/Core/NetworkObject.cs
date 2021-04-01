@@ -26,13 +26,13 @@ namespace MLAPI
 
         [HideInInspector]
         [SerializeField]
-        internal uint GlobalObjectIdHash32;
+        internal ulong GlobalObjectIdHash64;
 
 #if UNITY_EDITOR
         private void OnValidate()
         {
             GlobalObjectIdString = UnityEditor.GlobalObjectId.GetGlobalObjectIdSlow(this).ToString();
-            GlobalObjectIdHash32 = XXHash.Hash32(GlobalObjectIdString);
+            GlobalObjectIdHash64 = XXHash.Hash64(GlobalObjectIdString);
 
             // Set this so the hash can be serialized on Scene objects. For prefabs, they are generated at runtime.
             ValidateHash();
