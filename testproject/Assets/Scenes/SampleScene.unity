@@ -345,8 +345,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdString: GlobalObjectId_V1-2-9fc0d4010bbf28b4594072e72b8655ab-319904396-0
   GlobalObjectIdHash64: 1097143707830893021
-  PrefabHash: 13507573368610208526
-  PrefabHashGenerator: Apple
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
 --- !u!4 &319904397
@@ -746,10 +744,10 @@ MonoBehaviour:
     NetworkPrefabs:
     - Prefab: {fileID: 8685790303553767886, guid: 96e0a72e30d0c46c8a5c9a750e8f5807,
         type: 3}
-      PlayerPrefab: 1
+      IsPlayer: 1
     - Prefab: {fileID: 442217489085244684, guid: 5eca8a21314fe4278ba2571c289a9773,
         type: 3}
-      PlayerPrefab: 0
+      IsPlayer: 0
     PlayerPrefabHash:
       id: 0
     CreatePlayerPrefab: 1
@@ -779,7 +777,7 @@ MonoBehaviour:
     00000000:
       type: {class: NullableBoolSerializable, ns: MLAPI.Configuration, asm: Unity.Multiplayer.MLAPI.Runtime}
       data:
-        Value: 14951230177878111678
+        Value: 14422508629381042771
 --- !u!4 &620561612
 Transform:
   m_ObjectHideFlags: 0
@@ -2034,8 +2032,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdString: GlobalObjectId_V1-2-9fc0d4010bbf28b4594072e72b8655ab-1914388417-0
   GlobalObjectIdHash64: 17860927210271322778
-  PrefabHash: 11904040415813359690
-  PrefabHashGenerator: ColorBall
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
 --- !u!1 &2036456027

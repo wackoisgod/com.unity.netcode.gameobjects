@@ -41,8 +41,6 @@ namespace UnityEditor
             }
             else if (m_NetworkObject.IsSpawned)
             {
-                EditorGUILayout.LabelField("PrefabHashGenerator: ", m_NetworkObject.PrefabHashGenerator, EditorStyles.label);
-                EditorGUILayout.LabelField("PrefabHash: ", m_NetworkObject.PrefabHash.ToString(), EditorStyles.label);
                 EditorGUILayout.LabelField("GlobalObjectIdHash64: ", m_NetworkObject.GlobalObjectIdHash64.ToString(), EditorStyles.label);
                 EditorGUILayout.LabelField("GlobalObjectIdString: ", m_NetworkObject.GlobalObjectIdString, EditorStyles.label);
                 EditorGUILayout.LabelField("NetworkId: ", m_NetworkObject.NetworkObjectId.ToString(), EditorStyles.label);
@@ -83,7 +81,6 @@ namespace UnityEditor
             else
             {
                 base.OnInspectorGUI();
-                EditorGUILayout.LabelField("PrefabHash: ", m_NetworkObject.PrefabHash.ToString(), EditorStyles.label);
                 EditorGUILayout.LabelField("GlobalObjectIdHash64: ", m_NetworkObject.GlobalObjectIdHash64.ToString(), EditorStyles.label);
                 EditorGUILayout.LabelField("GlobalObjectIdString: ", m_NetworkObject.GlobalObjectIdString, EditorStyles.label);
             }
