@@ -78,6 +78,7 @@ namespace MLAPI
         internal ulong? OwnerClientIdInternal = null;
 
         /// <summary>
+        /// TODO @mfatihmar: rewrite this summary block
         /// InstanceId is the id that is unique to the object and scene for a scene object when UsePrefabSync is false.
         /// If UsePrefabSync is true or if it's used on non scene objects, this has no effect.
         /// Should not be set manually
