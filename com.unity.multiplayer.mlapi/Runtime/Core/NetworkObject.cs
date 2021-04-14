@@ -20,6 +20,8 @@ namespace MLAPI
     [DisallowMultipleComponent]
     public sealed class NetworkObject : MonoBehaviour
     {
+        private int m_BadName;
+
         [HideInInspector]
         [SerializeField]
         internal uint GlobalObjectIdHash;
