@@ -37,7 +37,7 @@ However, it is possible to apply these rules within IDEs while authoring source 
 
 [`dotnet-format`](https://github.com/dotnet/format) is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used.
 
-- [Download and install latest .NET SDK from the official Microsoft sources](https://dotnet.microsoft.com/download)
+- [Download and install latest .NET SDK from one of the official Microsoft sources](https://dotnet.microsoft.com/download)
 - Verify `dotnet` installation by executing `dotnet --version` command
 - Install `dotnet-format` tool by executing `dotnet tool install -g dotnet-format` command
 - Verify `dotnet-format` installation by executing `dotnet-format --version` command
@@ -45,20 +45,40 @@ However, it is possible to apply these rules within IDEs while authoring source 
 
 #### standards.py
 
+_// todo_
+
 ### Usage
+
+_// todo_
 
 #### Check & Fix
 
+_// todo_
+
 #### Git Hooks
+
+_// todo_
 
 #### IDE Plugins
 
+_// todo_
+
 ### Yamato
+
+_// todo_
 
 ## Ruleset
 
+_// todo_
+
 ### Spacing
+
+_// todo_
 
 ### Formatting
 
+_// todo_
+
 ### Naming
+
+_// todo_
