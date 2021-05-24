@@ -19,6 +19,8 @@
 
 ## Tooling
 
+We are leveraging a couple of tools to help us better enforce our coding standards during the local development and code review process.
+
 ### Setup
 
 #### EditorConfig
