@@ -4,13 +4,13 @@
 
 - [Tooling](#tooling)
   - [Setup](#setup)
-    - EditorConfig
-    - dotnet-format
-    - standards.py
+    - [EditorConfig](#editorconfig)
+    - [dotnet-format](#dotnet-format)
+    - [standards.py](#standardspy)
   - [Usage](#usage)
-    - Check & Fix
-    - Git Hooks
-    - IDE Plugins
+    - [Check & Fix](#check--fix)
+    - [Git Hooks](#git-hooks)
+    - [IDE Plugins](#ide-plugins)
   - [Yamato](#yamato)
 - [Ruleset](#ruleset)
   - [Spacing](#spacing)
