@@ -26,17 +26,119 @@ namespace MLAPI.Prototyping
 
         private class NetworkState : INetworkSerializable
         {
-            public bool InLocalSpace;
-            public Vector3 Position;
-            public Quaternion Rotation;
-            public Vector3 Scale;
+            // 0:InLocalSpace
+            // 1:PositionX | 2:PositionY | 3:PositionZ
+            // 4:RotationX | 5:RotationY | 6:RotationZ
+            // 7:ScaleX    | 8:ScaleY    | 9:ScaleZ
+            // 10-15: unused
+            public ushort Bitset;
+
+            public bool InLocalSpace
+            {
+                get => (Bitset & (1 << 0)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 0);
+            }
+
+            public bool HasPositionX
+            {
+                get => (Bitset & (1 << 1)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 1);
+            }
+
+            public bool HasPositionY
+            {
+                get => (Bitset & (1 << 2)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 2);
+            }
+
+            public bool HasPositionZ
+            {
+                get => (Bitset & (1 << 3)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 3);
+            }
+
+            public bool HasRotationX
+            {
+                get => (Bitset & (1 << 4)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 4);
+            }
+
+            public bool HasRotationY
+            {
+                get => (Bitset & (1 << 5)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 5);
+            }
+
+            public bool HasRotationZ
+            {
+                get => (Bitset & (1 << 6)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 6);
+            }
+
+            public bool HasScaleX
+            {
+                get => (Bitset & (1 << 7)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 7);
+            }
+
+            public bool HasScaleY
+            {
+                get => (Bitset & (1 << 8)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 8);
+            }
+
+            public bool HasScaleZ
+            {
+                get => (Bitset & (1 << 9)) != 0;
+                set => Bitset |= (ushort)((value ? 1 : 0) << 9);
+            }
+
+            public float PositionX, PositionY, PositionZ;
+            public float RotationX, RotationY, RotationZ;
+            public float ScaleX, ScaleY, ScaleZ;
 
             public void NetworkSerialize(NetworkSerializer serializer)
             {
-                serializer.Serialize(ref InLocalSpace);
-                serializer.Serialize(ref Position);
-                serializer.Serialize(ref Rotation);
-                serializer.Serialize(ref Scale);
+                serializer.Serialize(ref Bitset);
+
+                if (HasPositionX)
+                {
+                    serializer.Serialize(ref PositionX);
+                }
+                if (HasPositionY)
+                {
+                    serializer.Serialize(ref PositionY);
+                }
+                if (HasPositionZ)
+                {
+                    serializer.Serialize(ref PositionZ);
+                }
+
+                if (HasRotationX)
+                {
+                    serializer.Serialize(ref RotationX);
+                }
+                if (HasRotationY)
+                {
+                    serializer.Serialize(ref RotationY);
+                }
+                if (HasRotationZ)
+                {
+                    serializer.Serialize(ref RotationZ);
+                }
+
+                if (HasScaleX)
+                {
+                    serializer.Serialize(ref ScaleX);
+                }
+                if (HasScaleY)
+                {
+                    serializer.Serialize(ref ScaleY);
+                }
+                if (HasScaleZ)
+                {
+                    serializer.Serialize(ref ScaleZ);
+                }
             }
         }
 
@@ -61,6 +163,10 @@ namespace MLAPI.Prototyping
         /// </summary>
         [Tooltip("Sets whether this transform should sync in local space or in world space")]
         public bool InLocalSpace = false;
+
+        public bool SyncPositionX = true, SyncPositionY = true, SyncPositionZ = true;
+        public bool SyncRotationX = true, SyncRotationY = true, SyncRotationZ = true;
+        public bool SyncScaleX = true, SyncScaleY = true, SyncScaleZ = true;
 
         /// <summary>
         /// The base amount of sends per seconds to use when range is disabled
@@ -90,18 +196,22 @@ namespace MLAPI.Prototyping
             bool isDirty = false;
 
             isDirty |= networkState.InLocalSpace != InLocalSpace;
-            if (InLocalSpace)
-            {
-                isDirty |= networkState.Position != m_Transform.localPosition;
-                isDirty |= networkState.Rotation != m_Transform.localRotation;
-                isDirty |= networkState.Scale != m_Transform.localScale;
-            }
-            else
-            {
-                isDirty |= networkState.Position != m_Transform.position;
-                isDirty |= networkState.Rotation != m_Transform.rotation;
-                isDirty |= networkState.Scale != m_Transform.lossyScale;
-            }
+
+            var position = InLocalSpace ? m_Transform.localPosition : m_Transform.position;
+            var rotation = InLocalSpace ? m_Transform.localRotation : m_Transform.rotation;
+            var scale = InLocalSpace ? m_Transform.localScale : m_Transform.lossyScale;
+
+            isDirty |= SyncPositionX && position.x != networkState.PositionX;
+            isDirty |= SyncPositionY && position.y != networkState.PositionY;
+            isDirty |= SyncPositionZ && position.z != networkState.PositionZ;
+
+            isDirty |= SyncRotationX && rotation.x != networkState.RotationX;
+            isDirty |= SyncRotationY && rotation.y != networkState.RotationY;
+            isDirty |= SyncRotationZ && rotation.z != networkState.RotationZ;
+
+            isDirty |= SyncScaleX && scale.x != networkState.ScaleX;
+            isDirty |= SyncScaleY && scale.y != networkState.ScaleY;
+            isDirty |= SyncScaleZ && scale.z != networkState.ScaleZ;
 
             return isDirty;
         }
@@ -109,41 +219,118 @@ namespace MLAPI.Prototyping
         private void UpdateNetworkState()
         {
             m_NetworkState.Value.InLocalSpace = InLocalSpace;
-            if (InLocalSpace)
-            {
-                m_NetworkState.Value.Position = m_Transform.localPosition;
-                m_NetworkState.Value.Rotation = m_Transform.localRotation;
-                m_NetworkState.Value.Scale = m_Transform.localScale;
-            }
-            else
-            {
-                m_NetworkState.Value.Position = m_Transform.position;
-                m_NetworkState.Value.Rotation = m_Transform.rotation;
-                m_NetworkState.Value.Scale = m_Transform.lossyScale;
-            }
+
+            (m_NetworkState.Value.HasPositionX, m_NetworkState.Value.HasPositionY, m_NetworkState.Value.HasPositionZ) =
+                (SyncPositionX, SyncPositionY, SyncPositionZ);
+            (m_NetworkState.Value.HasRotationX, m_NetworkState.Value.HasRotationY, m_NetworkState.Value.HasRotationZ) =
+                (SyncRotationX, SyncRotationY, SyncRotationZ);
+            (m_NetworkState.Value.HasScaleX, m_NetworkState.Value.HasScaleY, m_NetworkState.Value.HasScaleZ) =
+                (SyncScaleX, SyncScaleY, SyncScaleZ);
+
+            var position = InLocalSpace ? m_Transform.localPosition : m_Transform.position;
+            var rotation = InLocalSpace ? m_Transform.localRotation : m_Transform.rotation;
+            var scale = InLocalSpace ? m_Transform.localScale : m_Transform.lossyScale;
+
+            (m_NetworkState.Value.PositionX, m_NetworkState.Value.PositionY, m_NetworkState.Value.PositionZ) =
+                (position.x, position.y, position.z);
+            (m_NetworkState.Value.RotationX, m_NetworkState.Value.RotationY, m_NetworkState.Value.RotationZ) =
+                (rotation.x, rotation.y, rotation.z);
+            (m_NetworkState.Value.ScaleX, m_NetworkState.Value.ScaleY, m_NetworkState.Value.ScaleZ) =
+                (scale.x, scale.y, scale.z);
 
             m_NetworkState.SetDirty(true);
         }
 
-        private void ApplyNetworkState(NetworkState netState)
+        private void ApplyNetworkState(NetworkState networkState)
         {
-            InLocalSpace = netState.InLocalSpace;
-            if (InLocalSpace)
+            InLocalSpace = networkState.InLocalSpace;
+
+            var position = InLocalSpace ? m_Transform.localPosition : m_Transform.position;
+            var rotation = InLocalSpace ? m_Transform.localRotation : m_Transform.rotation;
+            var scale = InLocalSpace ? m_Transform.localScale : m_Transform.lossyScale;
+
+            if (networkState.HasPositionX)
             {
-                m_Transform.localPosition = netState.Position;
-                m_Transform.localRotation = netState.Rotation;
-                m_Transform.localScale = netState.Scale;
+                position.x = networkState.PositionX;
             }
-            else
+            if (networkState.HasPositionY)
             {
-                m_Transform.position = netState.Position;
-                m_Transform.rotation = netState.Rotation;
-                m_Transform.localScale = Vector3.one;
-                var lossyScale = m_Transform.lossyScale;
-                m_Transform.localScale = new Vector3(netState.Scale.x / lossyScale.x, netState.Scale.y / lossyScale.y, netState.Scale.z / lossyScale.z);
+                position.y = networkState.PositionY;
+            }
+            if (networkState.HasPositionZ)
+            {
+                position.z = networkState.PositionZ;
             }
 
-            m_PrevNetworkState = netState;
+            if (networkState.HasRotationX)
+            {
+                rotation.x = networkState.RotationX;
+            }
+            if (networkState.HasRotationY)
+            {
+                rotation.y = networkState.RotationY;
+            }
+            if (networkState.HasRotationZ)
+            {
+                rotation.z = networkState.RotationZ;
+            }
+
+            if (networkState.HasScaleX)
+            {
+                scale.x = networkState.ScaleX;
+            }
+            if (networkState.HasScaleY)
+            {
+                scale.y = networkState.ScaleY;
+            }
+            if (networkState.HasScaleZ)
+            {
+                scale.z = networkState.ScaleZ;
+            }
+
+            if (networkState.HasPositionX || networkState.HasPositionY || networkState.HasPositionZ)
+            {
+                if (InLocalSpace)
+                {
+                    m_Transform.localPosition = position;
+                }
+                else
+                {
+                    m_Transform.position = position;
+                }
+            }
+            if (networkState.HasRotationX || networkState.HasRotationY || networkState.HasRotationZ)
+            {
+                // numerical precision issues can make the remainder very slightly negative.
+                // In this case, use 0 for w as, otherwise, w would be NaN.
+                var remainder = 1f - Mathf.Pow(rotation.x, 2) - Mathf.Pow(rotation.y, 2) - Mathf.Pow(rotation.z, 2);
+                var computedW = (remainder > 0f) ? Mathf.Sqrt(remainder) : 0.0f;
+                var quaternion = new Quaternion(rotation.x, rotation.y, rotation.z, computedW);
+
+                if (InLocalSpace)
+                {
+                    m_Transform.localRotation = quaternion;
+                }
+                else
+                {
+                    m_Transform.rotation = quaternion;
+                }
+            }
+            if (networkState.HasScaleX || networkState.HasScaleY || networkState.HasScaleZ)
+            {
+                if (InLocalSpace)
+                {
+                    m_Transform.localScale = scale;
+                }
+                else
+                {
+                    m_Transform.localScale = Vector3.one;
+                    var lossyScale = m_Transform.lossyScale;
+                    m_Transform.localScale = new Vector3(networkState.ScaleX / lossyScale.x, networkState.ScaleY / lossyScale.y, networkState.ScaleZ / lossyScale.z);
+                }
+            }
+
+            m_PrevNetworkState = networkState;
         }
 
         private void OnNetworkStateChanged(NetworkState oldState, NetworkState newState)
