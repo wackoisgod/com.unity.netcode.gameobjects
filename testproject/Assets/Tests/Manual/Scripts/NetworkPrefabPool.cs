@@ -420,6 +420,7 @@ namespace TestProject.ManualTests
             }
             else
             {
+                Object.Destroy(networkObject.gameObject);
                 return true;
             }
             return false;
