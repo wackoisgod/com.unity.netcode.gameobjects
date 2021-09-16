@@ -5,6 +5,7 @@ using UnityEngine.TestTools;
 
 namespace Unity.Netcode.RuntimeTests
 {
+#if UNITY_EDITOR || UNITY_STANDALONE
     public class NetworkVarBufferCopyTest : BaseMultiInstanceTest
     {
         public class DummyNetVar : NetworkVariableBase
@@ -117,4 +118,5 @@ namespace Unity.Netcode.RuntimeTests
             Assert.True(clientComponent.NetVar.DeltaRead);
         }
     }
+#endif // UNITY_EDITOR || UNITY_STANDALONE
 }

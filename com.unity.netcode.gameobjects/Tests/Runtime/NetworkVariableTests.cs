@@ -7,6 +7,7 @@ using Unity.Collections;
 
 namespace Unity.Netcode.RuntimeTests
 {
+#if UNITY_EDITOR || UNITY_STANDALONE
     public struct FixedString32Struct : INetworkSerializable
     {
         public FixedString32Bytes FixedString;
@@ -442,4 +443,5 @@ namespace Unity.Netcode.RuntimeTests
             yield return base.Teardown();
         }
     }
+#endif // UNITY_EDITOR || UNITY_STANDALONE
 }
