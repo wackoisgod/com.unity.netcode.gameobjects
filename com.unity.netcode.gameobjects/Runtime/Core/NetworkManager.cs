@@ -737,6 +737,13 @@ namespace Unity.Netcode
             NetworkConfig.NetworkTransport.Initialize();
         }
 
+        private IEnumerator StartServerAwait(SocketTasks socketTasks)
+        {
+            var asyncTask = StartServerAsync();
+            yield return new WaitUntil(() => asyncTask.IsCompleted);
+            socketTasks.Tasks = asyncTask.Result.Tasks;
+        }
+
         public SocketTasks StartServer()
         {
             if (NetworkLog.CurrentLogLevel <= LogLevel.Developer)
@@ -744,8 +751,10 @@ namespace Unity.Netcode
                 NetworkLog.LogInfo(nameof(StartServer));
             }
 
-            // TODO: This call blocks the thread... certainly not a good idea and may deadlock Unity depending on the transport?
-            return StartServerAsync().Result;
+            var socketTasks = new SocketTasks();
+            StartCoroutine(StartServerAwait(socketTasks));
+
+            return socketTasks;
         }
 
         /// <summary>
