@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 #if UNITY_EDITOR
 using Unity.Netcode.Editor;
 #endif
@@ -136,6 +137,11 @@ namespace Unity.Netcode.RuntimeTests
             // TODO: Cleanup
         }
 
+        public override Task<SocketTasks> StartClientAsync()
+        {
+            return Task.FromResult(StartClient());
+        }
+
         public override SocketTasks StartClient()
         {
             if (s_Server == null)
@@ -187,6 +193,11 @@ namespace Unity.Netcode.RuntimeTests
             });
 
             return SocketTask.Done.AsTasks();
+        }
+
+        public override Task<SocketTasks> StartServerAsync()
+        {
+            return Task.FromResult(StartServer());
         }
 
         public override SocketTasks StartServer()

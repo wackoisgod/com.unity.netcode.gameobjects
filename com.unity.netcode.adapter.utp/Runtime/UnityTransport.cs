@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 using NetcodeNetworkEvent = Unity.Netcode.NetworkEvent;
@@ -650,6 +651,25 @@ namespace Unity.Netcode
             return task.AsTasks();
         }
 
+        public override Task<SocketTasks> StartClientAsync()
+        {
+            if (m_Driver.IsCreated)
+            {
+                return Task.FromResult(SocketTask.Fault.AsTasks());
+            }
+
+            IEnumerator ClientBindAndConnectAsync(TaskCompletionSource<SocketTasks> tcs)
+            {
+                var task = SocketTask.Working;
+                yield return ClientBindAndConnect(task);
+                tcs.SetResult(task.AsTasks());
+            }
+
+            TaskCompletionSource<SocketTasks> tcs = new TaskCompletionSource<SocketTasks>();
+            StartCoroutine(ClientBindAndConnectAsync(tcs));
+            return tcs.Task;
+        }
+
         public override SocketTasks StartServer()
         {
             if (m_Driver.IsCreated)
@@ -669,6 +689,41 @@ namespace Unity.Netcode
             }
 
             return task.AsTasks();
+        }
+
+        public override Task<SocketTasks> StartServerAsync()
+        {
+            if (m_Driver.IsCreated)
+            {
+                return Task.FromResult(SocketTask.Fault.AsTasks());
+            }
+
+            IEnumerator ServerBindAndListenAsync(TaskCompletionSource<SocketTasks> tcs)
+            {
+                var task = SocketTask.Working;
+                yield return ServerBindAndListen(task, NetworkEndPoint.Parse(m_ServerAddress, m_ServerPort));
+                tcs.SetResult(task.AsTasks());
+            }
+
+            IEnumerator StartRelayServerAsync(TaskCompletionSource<SocketTasks> tcs)
+            {
+                var task = SocketTask.Working;
+                yield return StartRelayServer(task);
+                tcs.SetResult(task.AsTasks());
+            }
+
+            TaskCompletionSource<SocketTasks> tcs = new TaskCompletionSource<SocketTasks>();
+            switch (m_ProtocolType)
+            {
+                case ProtocolType.UnityTransport:
+                    StartCoroutine(ServerBindAndListenAsync(tcs));
+                    break;
+                case ProtocolType.RelayUnityTransport:
+                    StartCoroutine(StartRelayServerAsync(tcs));
+                    break;
+            }
+
+            return tcs.Task;
         }
 
         public override void Shutdown()

@@ -37,6 +37,13 @@ namespace Unity.Netcode.RuntimeTests
             });
         }
 
+        /// <summary>
+        /// Test Verifies the following cases with 1 host & 1 client:
+        /// - Client called ServerRPC executes on Host (remote)
+        /// - Client called ServerRPC does NOT execute on Client (self)
+        /// - Host called ClientRPC executes on Client (remote)
+        /// - Host called ClientRPC executes on Host (self)
+        /// </summary>
         [UnityTest]
         public IEnumerator TestRpcs()
         {
@@ -90,6 +97,81 @@ namespace Unity.Netcode.RuntimeTests
             Assert.True(hasReceivedServerRpc, "ServerRpc was not received");
             Assert.True(hasReceivedClientRpcLocally, "ClientRpc was not locally received on the server");
             Assert.True(hasReceivedClientRpcRemotely, "ClientRpc was not remotely received on the client");
+        }
+    }
+    public class RpcTestsHostOnly : BaseMultiInstanceTest
+    {
+        public class RpcTestNB : NetworkBehaviour
+        {
+            public event Action OnServer_Rpc;
+            public event Action OnClient_Rpc;
+
+            [ServerRpc]
+            public void MyServerRpc()
+            {
+                OnServer_Rpc();
+            }
+
+            [ClientRpc]
+            public void MyClientRpc()
+            {
+                OnClient_Rpc();
+            }
+        }
+
+        protected override int NbClients => 0;
+
+        [UnitySetUp]
+        public override IEnumerator Setup()
+        {
+            yield return StartSomeClientsAndServerWithPlayers(true, NbClients, playerPrefab =>
+            {
+                playerPrefab.AddComponent<RpcTestNB>();
+            });
+        }
+
+        /// <summary>
+        /// Test Verifies the following cases with 1 host & 1 client:
+        /// - Client called ServerRPC executes on Host (remote)
+        /// - Client called ServerRPC does NOT execute on Client (self)
+        /// - Host called ClientRPC executes on Client (remote)
+        /// - Host called ClientRPC executes on Host (self)
+        /// </summary>
+        [UnityTest]
+        public IEnumerator TestHostOnlyRpcs()
+        {
+            // This is the *SERVER VERSION* of the *CLIENT PLAYER*
+            var serverClientPlayerResult = new MultiInstanceHelpers.CoroutineResultWrapper<NetworkObject>();
+            yield return MultiInstanceHelpers.Run(MultiInstanceHelpers.GetNetworkObjectByRepresentation((x => x.IsPlayerObject && x.OwnerClientId == m_ServerNetworkManager.LocalClientId), m_ServerNetworkManager, serverClientPlayerResult));
+
+            // Setup state
+            bool hasReceivedServerRpc = false;
+            bool hasReceivedClientRpcLocally = false;
+
+            serverClientPlayerResult.Result.GetComponent<RpcTestNB>().OnServer_Rpc += () =>
+            {
+                Debug.Log("ServerRpc received on server object");
+                hasReceivedServerRpc = true;
+            };
+
+            serverClientPlayerResult.Result.GetComponent<RpcTestNB>().OnClient_Rpc += () =>
+            {
+                // The RPC invoked locally. (Weaver failure?)
+                Debug.Log("ClientRpc received on server object");
+                hasReceivedClientRpcLocally = true;
+            };
+
+            // Send ServerRpc
+            serverClientPlayerResult.Result.GetComponent<RpcTestNB>().MyServerRpc();
+
+            // Send ClientRpc
+            serverClientPlayerResult.Result.GetComponent<RpcTestNB>().MyClientRpc();
+
+            // Wait for RPCs to be received
+            yield return MultiInstanceHelpers.Run(MultiInstanceHelpers.WaitForCondition(() => hasReceivedServerRpc && hasReceivedClientRpcLocally));
+
+            Assert.True(hasReceivedServerRpc, "ServerRpc was not received");
+            Assert.True(hasReceivedClientRpcLocally, "ClientRpc was not locally received on the server");
         }
     }
 }

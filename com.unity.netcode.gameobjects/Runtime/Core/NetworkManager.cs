@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
@@ -735,14 +737,25 @@ namespace Unity.Netcode
             NetworkConfig.NetworkTransport.Initialize();
         }
 
-        /// <summary>
-        /// Starts a server
-        /// </summary>
         public SocketTasks StartServer()
         {
             if (NetworkLog.CurrentLogLevel <= LogLevel.Developer)
             {
-                NetworkLog.LogInfo("StartServer()");
+                NetworkLog.LogInfo(nameof(StartServer));
+            }
+
+            // TODO: This call blocks the thread... certainly not a good idea and may deadlock Unity depending on the transport?
+            return StartServerAsync().Result;
+        }
+
+        /// <summary>
+        /// Starts a server
+        /// </summary>
+        public async Task<SocketTasks> StartServerAsync()
+        {
+            if (NetworkLog.CurrentLogLevel <= LogLevel.Developer)
+            {
+                NetworkLog.LogInfo(nameof(StartServerAsync));
             }
 
             if (IsServer || IsClient)
@@ -769,7 +782,11 @@ namespace Unity.Netcode
 
             Initialize(true);
 
-            var socketTasks = NetworkConfig.NetworkTransport.StartServer();
+            var socketTasks = await NetworkConfig.NetworkTransport.StartServerAsync();
+            if (!socketTasks.Success)
+            {
+                return socketTasks;
+            }
 
             IsServer = true;
             IsClient = false;
@@ -782,9 +799,12 @@ namespace Unity.Netcode
             return socketTasks;
         }
 
+        private SocketTasks m_InitializationTask;
+
         /// <summary>
-        /// Starts a client
+        /// Starts a client. This method is blocking until transport initialization completes.
         /// </summary>
+        /// <remarks>Prefer <see cref="StartClientAsync"/> where possible.</remarks>
         public SocketTasks StartClient()
         {
             if (NetworkLog.CurrentLogLevel <= LogLevel.Developer)
@@ -792,6 +812,20 @@ namespace Unity.Netcode
                 NetworkLog.LogInfo(nameof(StartClient));
             }
 
+            // TODO: This call blocks the thread... certainly not a good idea and may deadlock Unity depending on the transport?
+            return StartClientAsync().Result;
+        }
+
+        // TODO: Get rid of "SocketTasks" type - it emulates Task but worse
+        // TODO: Handle cancellation tokens appropriately
+        public async Task<SocketTasks> StartClientAsync()
+        {
+            if (NetworkLog.CurrentLogLevel <= LogLevel.Developer)
+            {
+                NetworkLog.LogInfo(nameof(StartClientAsync));
+            }
+
+            // TODO: Some "initializing" indicator to protect against multiple in-flight calls since these won't be true until the async op completes
             if (IsServer || IsClient)
             {
                 if (NetworkLog.CurrentLogLevel <= LogLevel.Normal)
@@ -804,23 +838,40 @@ namespace Unity.Netcode
 
             Initialize(false);
 
-            var socketTasks = NetworkConfig.NetworkTransport.StartClient();
+            // TODO: Once we get rid of SocketTasks type, maybe create faulted tasks and watch for those instead?
+            var transportTasks = await NetworkConfig.NetworkTransport.StartClientAsync();
+            if (!transportTasks.Success)
+            {
+                return transportTasks;
+            }
+
+            m_MessagingSystem.ClientConnected(ServerClientId);
 
             IsServer = false;
             IsClient = true;
             IsListening = true;
 
-            return socketTasks;
+            return transportTasks;
         }
 
-        /// <summary>
-        /// Starts a Host
-        /// </summary>
         public SocketTasks StartHost()
         {
             if (NetworkLog.CurrentLogLevel <= LogLevel.Developer)
             {
                 NetworkLog.LogInfo(nameof(StartHost));
+            }
+
+            return StartHostAsync().Result;
+        }
+
+        /// <summary>
+        /// Starts a Host
+        /// </summary>
+        public async Task<SocketTasks> StartHostAsync()
+        {
+            if (NetworkLog.CurrentLogLevel <= LogLevel.Developer)
+            {
+                NetworkLog.LogInfo(nameof(StartHostAsync));
             }
 
             if (IsServer || IsClient)
@@ -847,7 +898,12 @@ namespace Unity.Netcode
 
             Initialize(true);
 
-            var socketTasks = NetworkConfig.NetworkTransport.StartServer();
+            var socketTasks = await NetworkConfig.NetworkTransport.StartServerAsync();
+            if (!socketTasks.Success)
+            {
+                return socketTasks;
+            }
+
             m_MessagingSystem.ClientConnected(ServerClientId);
             LocalClientId = ServerClientId;
 

@@ -46,7 +46,7 @@ namespace Unity.Netcode.RuntimeTests
             server.NetworkConfig = new NetworkConfig()
             {
                 // Set transport
-                NetworkTransport = go.AddComponent<SIPTransport>()
+                NetworkTransport = go.AddComponent<UnityTransport>()
             };
 
             s_OriginalTargetFrameRate = Application.targetFrameRate;

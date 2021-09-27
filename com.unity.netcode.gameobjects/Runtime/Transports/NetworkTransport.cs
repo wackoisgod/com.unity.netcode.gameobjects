@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Unity.Netcode
@@ -64,10 +65,20 @@ namespace Unity.Netcode
         /// </summary>
         public abstract SocketTasks StartClient();
 
+        public virtual Task<SocketTasks> StartClientAsync()
+        {
+            throw new NotImplementedException("This transport does not support Asynchronous start.");
+        }
+
         /// <summary>
         /// Starts to listening for incoming clients
         /// </summary>
         public abstract SocketTasks StartServer();
+
+        public virtual Task<SocketTasks> StartServerAsync()
+        {
+            throw new NotImplementedException("This transport does not support Asynchronous start.");
+        }
 
         /// <summary>
         /// Disconnects a client from the server
