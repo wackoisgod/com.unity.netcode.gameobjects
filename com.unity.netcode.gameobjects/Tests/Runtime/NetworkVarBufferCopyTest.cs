@@ -2,6 +2,8 @@ using System.Collections;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
+#if UNITY_STANDALONE || UNITY_EDITOR
+
 namespace Unity.Netcode.RuntimeTests
 {
     public class NetworkVarBufferCopyTest : BaseMultiInstanceTest
@@ -133,3 +135,5 @@ namespace Unity.Netcode.RuntimeTests
         }
     }
 }
+
+#endif // UNITY_STANDALONE || UNITY_EDITOR
