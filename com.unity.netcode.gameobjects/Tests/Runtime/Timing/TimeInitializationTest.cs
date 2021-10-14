@@ -3,6 +3,8 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
+#if UNITY_STANDALONE || UNITY_EDITOR
+
 namespace Unity.Netcode.RuntimeTests
 {
     /// <summary>
@@ -100,3 +102,5 @@ namespace Unity.Netcode.RuntimeTests
         }
     }
 }
+
+#endif // UNITY_STANDALONE || UNITY_EDITOR
