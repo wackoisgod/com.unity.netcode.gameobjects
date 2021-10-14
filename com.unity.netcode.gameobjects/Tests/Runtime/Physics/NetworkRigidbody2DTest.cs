@@ -4,6 +4,8 @@ using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.TestTools;
 
+#if UNITY_STANDALONE || UNITY_EDITOR
+
 namespace Unity.Netcode.RuntimeTests.Physics
 {
     public class NetworkRigidbody2DDynamicTest : NetworkRigidbody2DTestBase
@@ -79,3 +81,5 @@ namespace Unity.Netcode.RuntimeTests.Physics
 
     }
 }
+
+#endif // UNITY_STANDALONE || UNITY_EDITOR
