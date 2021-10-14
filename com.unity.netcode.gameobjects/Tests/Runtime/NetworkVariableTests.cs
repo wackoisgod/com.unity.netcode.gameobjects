@@ -5,6 +5,8 @@ using UnityEngine.TestTools;
 using NUnit.Framework;
 using Unity.Collections;
 
+#if UNITY_STANDALONE || UNITY_EDITOR
+
 namespace Unity.Netcode.RuntimeTests
 {
     public struct FixedString32Struct : INetworkSerializable
@@ -429,3 +431,5 @@ namespace Unity.Netcode.RuntimeTests
         }
     }
 }
+
+#endif // UNITY_STANDALONE || UNITY_EDITOR
