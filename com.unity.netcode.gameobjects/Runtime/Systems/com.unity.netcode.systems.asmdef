@@ -1,0 +1,16 @@
+{
+    "name": "com.unity.netcode.systems",
+    "rootNamespace": "Unity.Netcode",
+    "references": [
+        "com.unity.netcode.core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
